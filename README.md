@@ -1,74 +1,36 @@
-````markdown
 # ChaxAI
 
-**ChaxAI** is an open-source, self-hosted AI assistant that allows users to chat with their own documents. It enables contextual Q&A over PDFs, markdown files, or structured knowledge bases by combining vector search with powerful LLMs like GPT-4.
+ChaxAI is a self‑hosted assistant that answers questions using the contents of your documents. It combines FastAPI, LangChain, and OpenAI with a FAISS vector store. A lightweight React interface enables chatting with the backend. The project is designed for easy local deployment and extension.
 
-> 🧠 Chat with your knowledge base — locally, securely, and intelligently.
+## Features
 
----
+- Parse PDF, Markdown, and text files
+- Create a FAISS vector index locally
+- Ask questions through a REST API with source citations
+- React + Tailwind chat UI with light/dark mode
+- Health check and document listing endpoints
 
-## ✨ Features
+## Getting Started
 
-- 🧾 **Document Understanding**  
-  Parse and embed PDFs, Markdown, and plain text files.
+### 1. Ingest Documents
 
-- 🧠 **GPT-4 / OpenAI Integration**  
-  Natural language responses backed by large language models.
-
-- ⚡ **Fast Vector Search**  
-  FAISS-powered embedding search for instant relevant context.
-
-- 🔒 **Fully Self-Hosted**  
-  No third-party storage — your data stays within your environment.
-
-- 🧩 **Modular Architecture**  
-  Easily swap in local models, different vector databases, or file types.
-
-- 🛠 **Workflow Automation (WIP)**  
-  Define rule-based triggers and automated responses for repetitive tasks.
-
----
-
-## 🧰 Tech Stack
-
-- **Frontend**: React + TailwindCSS *(optional)*
-- **Backend**: FastAPI (Python)
-- **Vector Store**: FAISS (can swap with ChromaDB, Weaviate, etc.)
-- **Embeddings**: OpenAI, HuggingFace Transformers
-- **LLM Provider**: OpenAI GPT-4 (or compatible APIs)
-
----
-
-## 🚀 Getting Started
-
-### 1. Clone the repository
+Place your files in `backend/docs/` and run:
 
 ```bash
-git clone https://github.com/Nickalus12/ChaxAI.git
-cd ChaxAI
-````
-
-### 2. Install Python dependencies
-
-```bash
+cd backend
+cp .env.example .env  # add your OpenAI key
+# optionally set VECTORSTORE_DIR if you wish to store embeddings elsewhere
 pip install -r requirements.txt
+python app/ingest.py
 ```
 
-### 3. Ingest your documents
-
-```bash
-python ingest.py --source ./docs --index ./vectorstore
-```
-
-This will parse documents and build a searchable vector index.
-
-### 4. Start the backend server
+### 2. Start the Backend
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-### 5. (Optional) Start the frontend
+### 3. Start the Frontend
 
 ```bash
 cd frontend
@@ -76,86 +38,22 @@ npm install
 npm run dev
 ```
 
----
+Open <http://localhost:3000> and start asking questions.
 
-## 🧪 Example API Usage
+### API Endpoints
 
-### Request
+The backend exposes a few endpoints:
 
-```http
-POST /ask
-Content-Type: application/json
+| Method | Path        | Description                    |
+| ------ | ----------- | ------------------------------ |
+| `GET`  | `/health`   | Returns `{"status": "ok"}`      |
+| `GET`  | `/documents`| List document sources in the vector store |
+| `POST` | `/ask`      | Ask a question using JSON `{ "question": "..." }` |
 
-{
-  "question": "What is the refund policy?",
-  "context": ["knowledge_base"]
-}
-```
+## Contributing
 
-### Response
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-```json
-{
-  "answer": "Our refund policy allows returns within 30 days of purchase with a valid receipt."
-}
-```
+## License
 
----
-
-## 📌 Roadmap
-
-* [x] Document ingestion via PDF/Markdown
-* [x] GPT-4 integration via LangChain
-* [x] FAISS vector store support
-* [ ] Web-based UI for file upload
-* [ ] Rule-based automations ("If user mentions X, do Y")
-* [ ] User authentication
-* [ ] Docker + Helm charts for deployment
-* [ ] Switchable LLM support (LLaMA, Mistral, etc.)
-
----
-
-## 🤝 Contributing
-
-We welcome contributions from the community!
-
-To get started:
-
-1. Fork this repository
-2. Create a new branch: `git checkout -b feature/your-feature-name`
-3. Make your changes
-4. Commit and push: `git commit -am 'Add new feature' && git push origin feature/your-feature-name`
-5. Open a Pull Request
-
-For more details, see [`CONTRIBUTING.md`](CONTRIBUTING.md).
-
----
-
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE).
-
-© 2025 [Nickalus Brewer](https://github.com/Nickalus12) — You are free to use, modify, and distribute with attribution.
-
----
-
-## 🙏 Credits
-
-Built with:
-
-* [LangChain](https://github.com/langchain-ai/langchain)
-* [FAISS](https://github.com/facebookresearch/faiss)
-* [OpenAI API](https://platform.openai.com/)
-* [FastAPI](https://github.com/tiangolo/fastapi)
-* Inspired by the design of Rasa, Chatbot UI, and other great open-source assistants.
-
----
-
-## 🌐 Stay Updated
-
-Star the project and follow [@Nickalus12](https://github.com/Nickalus12) for updates and new AI-powered tools.
-
-```
-
-Let me know if you want a `CONTRIBUTING.md`, `LICENSE`, or `requirements.txt` scaffold next.
-```
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
