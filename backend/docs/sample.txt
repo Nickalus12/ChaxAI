@@ -1,0 +1,2 @@
+Sample documentation for ChaxAI.
+Another line for testing vector search.
