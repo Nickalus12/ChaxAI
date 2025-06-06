@@ -1,0 +1,17 @@
+version: '3'
+services:
+  backend:
+    build: ./backend
+    volumes:
+      - ./backend/docs:/app/docs
+      - ./backend/vectorstore:/app/vectorstore
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8000:8000"
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend

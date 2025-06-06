@@ -5,6 +5,7 @@ function App() {
   const [question, setQuestion] = useState('')
   const [messages, setMessages] = useState([])
   const [theme, setTheme] = useState('light')
+  const [uploading, setUploading] = useState(false)
 
   const toggleTheme = () => {
     setTheme(theme === 'light' ? 'dark' : 'light')
@@ -24,6 +25,26 @@ function App() {
     }
   }
 
+  const uploadFiles = async (e) => {
+    const files = e.target.files
+    if (!files.length) return
+    const formData = new FormData()
+    Array.from(files).forEach((file) => formData.append('files', file))
+    try {
+      setUploading(true)
+      await axios.post('http://localhost:8000/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      alert('Upload successful')
+    } catch (err) {
+      console.error(err)
+      alert('Upload failed')
+    } finally {
+      setUploading(false)
+      e.target.value = ''
+    }
+  }
+
   return (
     <div className="min-h-screen flex flex-col items-center p-4 gap-4">
       <button onClick={toggleTheme} className="self-end px-2 py-1 border rounded">
@@ -32,6 +53,13 @@ function App() {
       <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">
         ChaxAI
       </h1>
+      <input
+        type="file"
+        multiple
+        onChange={uploadFiles}
+        className="mb-2"
+      />
+      {uploading && <p className="text-sm">Uploading...</p>}
       <form onSubmit={submitQuestion} className="w-full max-w-xl flex flex-col gap-2">
         <input
           className="border rounded p-2 dark:bg-gray-700 dark:text-white"

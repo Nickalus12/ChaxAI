@@ -93,3 +93,16 @@ Be kind, respectful, and constructive. We're building a welcoming open-source co
 
 Thank you again for being a part of ChaxAI!
 Happy coding! 🚀
+
+---
+
+## 🐳 Using Docker
+
+If you prefer running the project in containers, build and start the stack with:
+
+```bash
+docker-compose build
+docker-compose up
+```
+
+This will run both the backend and frontend services.

@@ -7,7 +7,9 @@ ENV_PATH = BASE_DIR / '.env'
 
 load_dotenv(dotenv_path=ENV_PATH)
 
-VECTOR_DIR = os.getenv('VECTORSTORE_DIR', str(BASE_DIR / 'vectorstore'))
+VECTOR_DIR = os.getenv("VECTORSTORE_DIR", str(BASE_DIR / "vectorstore"))
+DOCS_DIR = BASE_DIR / "docs"
+ALLOWED_ORIGINS = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "*").split(",")]
 
 
 def get_openai_key() -> str:
