@@ -14,7 +14,7 @@ from langchain_community.document_loaders import (
     UnstructuredMarkdownLoader,
 )
 
-from .config import VECTOR_DIR, DOCS_DIR, get_openai_key
+from .config import VECTOR_DIR, DOCS_DIR, get_openai_key, get_api_base
 import logging
 
 
@@ -50,7 +50,10 @@ logger = logging.getLogger(__name__)
 
 def ingest_paths(paths: List[str]) -> None:
     """Add the given file paths to the FAISS store."""
-    embeddings = OpenAIEmbeddings(openai_api_key=get_openai_key())
+    embeddings = OpenAIEmbeddings(
+        openai_api_key=get_openai_key(),
+        openai_api_base=get_api_base("openai"),
+    )
     documents = []
     for p in paths:
         documents.extend(load_file(Path(p)))
@@ -90,7 +93,10 @@ def rebuild_store() -> None:
                 f.unlink()
             logger.info("Cleared empty vector store")
         raise RuntimeError("No documents available to rebuild vector store")
-    embeddings = OpenAIEmbeddings(openai_api_key=get_openai_key())
+    embeddings = OpenAIEmbeddings(
+        openai_api_key=get_openai_key(),
+        openai_api_base=get_api_base("openai"),
+    )
     splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
     split_docs = splitter.split_documents(docs)
     store = FAISS.from_documents(split_docs, embeddings)

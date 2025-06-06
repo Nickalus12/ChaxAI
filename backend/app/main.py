@@ -3,7 +3,7 @@ from pathlib import Path
 from .utils import secure_filename
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import UploadFile, File
-from .middleware import RequestIDMiddleware
+from .middleware import RequestIDMiddleware, SecurityHeadersMiddleware
 
 from .schemas import Question, Answer, DocumentInfo
 from .vector import ask_question, list_documents
@@ -30,6 +30,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.add_middleware(RequestIDMiddleware)
+app.add_middleware(SecurityHeadersMiddleware)
 
 
 @app.get("/health")
