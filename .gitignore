@@ -9,6 +9,7 @@ backend/vectorstore/
 # Node
 node_modules/
 dist/
+logs/
 
 # Others
 .DS_Store

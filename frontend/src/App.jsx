@@ -1,90 +1,77 @@
-import React, { useState } from 'react'
-import axios from 'axios'
+import React, { useEffect, useState } from 'react'
+import { createApi } from './api'
+import Chat from './components/Chat'
+import DocumentList from './components/DocumentList'
+import UploadForm from './components/UploadForm'
+import Header from './components/Header'
 
-function App() {
-  const [question, setQuestion] = useState('')
-  const [messages, setMessages] = useState([])
-  const [theme, setTheme] = useState('light')
+function App({ apiUrl, apiToken }) {
+  const api = createApi({ baseUrl: apiUrl, token: apiToken })
+  const [docs, setDocs] = useState([])
+  const [theme, setTheme] = useState(
+    localStorage.getItem('chaxai-theme') || 'light'
+  )
   const [uploading, setUploading] = useState(false)
 
-  const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light')
-    document.documentElement.classList.toggle('dark')
-  }
-
-  const submitQuestion = async (e) => {
-    e.preventDefault()
-    if (!question) return
+  const loadDocuments = async () => {
     try {
-      const { data } = await axios.post('http://localhost:8000/ask', { question })
-      setMessages([...messages, { question, answer: data.answer, sources: data.sources }])
-      setQuestion('')
+      const data = await api.listDocuments()
+      setDocs(data)
     } catch (err) {
       console.error(err)
-      setMessages([...messages, { question, answer: 'Error fetching answer', sources: [] }])
     }
   }
 
-  const uploadFiles = async (e) => {
-    const files = e.target.files
+  useEffect(() => {
+    loadDocuments()
+  }, [])
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark')
+    localStorage.setItem('chaxai-theme', theme)
+  }, [theme])
+
+  const toggleTheme = () => {
+    setTheme(theme === 'light' ? 'dark' : 'light')
+  }
+
+  const handleUpload = async (files) => {
     if (!files.length) return
-    const formData = new FormData()
-    Array.from(files).forEach((file) => formData.append('files', file))
     try {
       setUploading(true)
-      await axios.post('http://localhost:8000/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
+      await api.uploadFiles(files)
+      await loadDocuments()
       alert('Upload successful')
     } catch (err) {
       console.error(err)
       alert('Upload failed')
     } finally {
       setUploading(false)
-      e.target.value = ''
+    }
+  }
+
+  const deleteDoc = async (name) => {
+    if (!window.confirm(`Delete ${name}?`)) return
+    try {
+      await api.deleteDocument(name)
+      await loadDocuments()
+    } catch (err) {
+      console.error(err)
+      alert('Delete failed')
     }
   }
 
   return (
     <div className="min-h-screen flex flex-col items-center p-4 gap-4">
-      <button onClick={toggleTheme} className="self-end px-2 py-1 border rounded">
-        {theme === 'light' ? 'Dark' : 'Light'} Mode
-      </button>
-      <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">
+      <Header theme={theme} toggleTheme={toggleTheme} />
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
         ChaxAI
       </h1>
-      <input
-        type="file"
-        multiple
-        onChange={uploadFiles}
-        className="mb-2"
-      />
-      {uploading && <p className="text-sm">Uploading...</p>}
-      <form onSubmit={submitQuestion} className="w-full max-w-xl flex flex-col gap-2">
-        <input
-          className="border rounded p-2 dark:bg-gray-700 dark:text-white"
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          placeholder="Ask a question"
-        />
-        <button className="bg-blue-500 text-white p-2 rounded" type="submit">
-          Ask
-        </button>
-      </form>
-      <div className="w-full max-w-xl flex flex-col gap-4">
-        {messages.map((m, idx) => (
-          <div key={idx} className="bg-white dark:bg-gray-700 p-4 rounded shadow">
-            <p className="font-semibold">Q: {m.question}</p>
-            <p className="mt-2">A: {m.answer}</p>
-            {m.sources && m.sources.length > 0 && (
-              <ul className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                {m.sources.map((s, i) => (
-                  <li key={i}>{s}</li>
-                ))}
-              </ul>
-            )}
-          </div>
-        ))}
+      <UploadForm uploading={uploading} onUpload={handleUpload} />
+      <Chat api={api} />
+      <div className="w-full max-w-xl mt-4">
+        <h2 className="font-bold mb-2">Documents</h2>
+        <DocumentList docs={docs} onDelete={deleteDoc} />
       </div>
     </div>
   )

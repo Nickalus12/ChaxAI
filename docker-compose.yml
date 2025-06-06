@@ -5,6 +5,7 @@ services:
     volumes:
       - ./backend/docs:/app/docs
       - ./backend/vectorstore:/app/vectorstore
+      - ./logs:/app/logs
     env_file:
       - ./backend/.env
     ports:

@@ -9,3 +9,8 @@ class Question(BaseModel):
 class Answer(BaseModel):
     answer: str
     sources: List[str]
+
+
+class DocumentInfo(BaseModel):
+    name: str
+    size: int
