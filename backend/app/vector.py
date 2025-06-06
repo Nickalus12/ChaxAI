@@ -1,6 +1,7 @@
 import os
 from functools import lru_cache
 from typing import List
+from langchain.docstore.document import Document
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_community.vectorstores import FAISS
 from langchain.chains.question_answering import load_qa_chain
@@ -37,3 +38,10 @@ def ask_question(payload: Question) -> Answer:
 def list_documents() -> List[str]:
     store = get_vectorstore()
     return [meta.get("source", "") for meta in store.docstore._dict.values()]
+
+
+def add_documents(docs: List[Document]) -> None:
+    """Add documents to the cached vector store and persist."""
+    store = get_vectorstore()
+    store.add_documents(docs)
+    store.save_local(VECTOR_DIR)
