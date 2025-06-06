@@ -7,6 +7,9 @@ ChaxAI is a self‑hosted assistant that answers questions using the contents of
 - Parse PDF, Markdown, and text files
 - Create a FAISS vector index locally
 - Ask questions through a REST API with source citations
+- Optional WebSocket endpoint for real-time chat
+- Multi-tenant support with JWT authentication
+- Usage analytics and request tracing
 - React + Tailwind chat UI with light/dark mode
 - Chat history persists locally for convenience
 - Health check and document listing endpoints
