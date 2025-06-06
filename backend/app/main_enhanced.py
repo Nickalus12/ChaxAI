@@ -1,6 +1,14 @@
 """Enhanced FastAPI application with enterprise features."""
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends, Request
+from fastapi import (
+    FastAPI,
+    HTTPException,
+    BackgroundTasks,
+    Depends,
+    Request,
+    UploadFile,
+    WebSocket,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from contextlib import asynccontextmanager

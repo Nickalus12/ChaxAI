@@ -7,8 +7,7 @@ from typing import List, Dict, Optional, Any, Tuple
 from datetime import datetime
 import asyncio
 from functools import lru_cache
-
-import numpy as np
+from pathlib import Path
 from langchain.docstore.document import Document
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
@@ -19,7 +18,7 @@ from .config import (
     OPENAI_API_KEY, get_encryption_cipher
 )
 from .grok_client import get_grok_client
-from .schemas import Question, Answer, DocumentInfo
+from .schemas_enhanced import Question, Answer, DocumentInfo
 
 logger = logging.getLogger("chaxai.vector")
 
