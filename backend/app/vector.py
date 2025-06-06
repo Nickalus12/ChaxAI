@@ -19,7 +19,10 @@ from .schemas import Question, Answer, DocumentInfo
 
 @lru_cache(maxsize=1)
 def get_embeddings() -> OpenAIEmbeddings:
-    return OpenAIEmbeddings(openai_api_key=get_openai_key())
+    return OpenAIEmbeddings(
+        openai_api_key=get_openai_key(),
+        openai_api_base=get_api_base("openai"),
+    )
 
 
 @lru_cache(maxsize=1)

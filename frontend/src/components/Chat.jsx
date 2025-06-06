@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import useChatHistory from '../hooks/useChatHistory'
 
 function Chat({ api }) {
   const [question, setQuestion] = useState('')
+  const inputRef = useRef(null)
   const { messages, addMessage, clearHistory } = useChatHistory()
   const [loading, setLoading] = useState(false)
 
@@ -19,6 +20,7 @@ function Chat({ api }) {
         requestId: result.requestId,
       })
       setQuestion('')
+      inputRef.current?.focus()
     } catch (err) {
       console.error(err)
       addMessage({ question, answer: 'Error fetching answer', sources: [], requestId: '' })
@@ -27,10 +29,15 @@ function Chat({ api }) {
     }
   }
 
+  useEffect(() => {
+    inputRef.current?.focus()
+  }, [])
+
   return (
     <div className="w-full max-w-xl flex flex-col gap-4">
       <form onSubmit={submit} className="flex flex-col gap-2">
         <input
+          ref={inputRef}
           className="border rounded p-2 dark:bg-gray-700 dark:text-white"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}

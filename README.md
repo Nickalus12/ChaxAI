@@ -12,6 +12,11 @@ ChaxAI is a self‑hosted assistant that answers questions using the contents of
 - Health check and document listing endpoints
 - Modular React components with an API helper for easier customization
 
+## Requirements
+
+- Python 3.11 or newer
+- Node.js 18 or newer (for building the frontend)
+
 ## Getting Started
 
 ### 1. Ingest Documents
@@ -29,6 +34,8 @@ cd backend
 # set API_TOKENS to require an API token for the backend
 # set LOG_LEVEL to control logging verbosity
 # set LOG_FILE to log to a file and MAX_UPLOAD_MB to limit upload size
+# OPENAI_API_BASE is also used for embeddings during ingestion and querying
+# security headers like X-Frame-Options are enabled by default
 pip install -r requirements.txt
 python app/ingest.py
 ```
@@ -53,6 +60,20 @@ backend runs on a different host or port. If the backend requires an API token,
 set `VITE_API_TOKEN` accordingly.
 
 Open <http://localhost:3000> and start asking questions.
+
+### 4. Build for Production
+
+When you're ready to deploy, build the optimized frontend assets. Make sure
+dependencies are installed first:
+
+```bash
+cd frontend
+npm install  # skip if you already ran this
+npm run build
+```
+
+The production build outputs static files in `frontend/dist/` that can be
+served by any web server.
 
 You can also upload additional files through the `/upload` endpoint or the
 upload form in the UI. Filenames are sanitized to prevent path traversal.
@@ -87,9 +108,13 @@ Container logs are stored in the local `logs/` directory.
 * Set the matching API key (`OPENAI_API_KEY`, `GROK_API_KEY`, or
   `ANTHROPIC_API_KEY`).
 * Optionally set `OPENAI_API_BASE`, `ANTHROPIC_API_BASE`, or `GROK_API_BASE`
-  to point at custom endpoints.
+  to point at custom endpoints. `OPENAI_API_BASE` also applies to embeddings
+  when generating and querying the vector store.
 * Set `LOG_LEVEL` in `.env` to control log verbosity.
-* Set `LOG_FILE` to enable file logging and `MAX_UPLOAD_MB` to enforce an upload size limit.
+* Built-in security headers (`X-Frame-Options`, `Referrer-Policy`, etc.) protect
+  the frontend by default.
+* Set `LOG_FILE` to enable file logging and `MAX_UPLOAD_MB` to enforce an upload
+  size limit.
 * Lint your code before submitting PRs to keep the codebase tidy.
 
 ### API Endpoints
