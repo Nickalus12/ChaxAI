@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+*.env
+
+# Vector store
+backend/vectorstore/
+
+# Node
+node_modules/
+dist/
+logs/
+
+# Others
+.DS_Store
+

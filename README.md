@@ -1,161 +1,142 @@
-````markdown
 # ChaxAI
 
-**ChaxAI** is an open-source, self-hosted AI assistant that allows users to chat with their own documents. It enables contextual Q&A over PDFs, markdown files, or structured knowledge bases by combining vector search with powerful LLMs like GPT-4.
+ChaxAI is a self‑hosted assistant that answers questions using the contents of your documents. It combines FastAPI, LangChain, and optional OpenAI, Grok, or Claude models with a FAISS vector store. A lightweight React interface enables chatting with the backend. The project is designed for easy local deployment and extension.
 
-> 🧠 Chat with your knowledge base — locally, securely, and intelligently.
+## Features
 
----
+- Parse PDF, Markdown, and text files
+- Create a FAISS vector index locally
+- Ask questions through a REST API with source citations
+- React + Tailwind chat UI with light/dark mode
+- Chat history persists locally for convenience
+- Health check and document listing endpoints
+- Modular React components with an API helper for easier customization
 
-## ✨ Features
+## Getting Started
 
-- 🧾 **Document Understanding**  
-  Parse and embed PDFs, Markdown, and plain text files.
+### 1. Ingest Documents
 
-- 🧠 **GPT-4 / OpenAI Integration**  
-  Natural language responses backed by large language models.
-
-- ⚡ **Fast Vector Search**  
-  FAISS-powered embedding search for instant relevant context.
-
-- 🔒 **Fully Self-Hosted**  
-  No third-party storage — your data stays within your environment.
-
-- 🧩 **Modular Architecture**  
-  Easily swap in local models, different vector databases, or file types.
-
-- 🛠 **Workflow Automation (WIP)**  
-  Define rule-based triggers and automated responses for repetitive tasks.
-
----
-
-## 🧰 Tech Stack
-
-- **Frontend**: React + TailwindCSS *(optional)*
-- **Backend**: FastAPI (Python)
-- **Vector Store**: FAISS (can swap with ChromaDB, Weaviate, etc.)
-- **Embeddings**: OpenAI, HuggingFace Transformers
-- **LLM Provider**: OpenAI GPT-4 (or compatible APIs)
-
----
-
-## 🚀 Getting Started
-
-### 1. Clone the repository
+Place your files in `backend/docs/` and run:
 
 ```bash
-git clone https://github.com/Nickalus12/ChaxAI.git
-cd ChaxAI
-````
-
-### 2. Install Python dependencies
-
-```bash
+cd backend
+# copy and edit .env.example
+# set LLM_PROVIDER to openai, grok, or claude
+# supply OPENAI_API_KEY, GROK_API_KEY, or ANTHROPIC_API_KEY accordingly
+# optionally set OPENAI_API_BASE, ANTHROPIC_API_BASE, or GROK_API_BASE
+# optionally set VECTORSTORE_DIR if you wish to store embeddings elsewhere
+# you can also set ALLOWED_ORIGINS for CORS, comma-separated
+# set API_TOKENS to require an API token for the backend
+# set LOG_LEVEL to control logging verbosity
+# set LOG_FILE to log to a file and MAX_UPLOAD_MB to limit upload size
 pip install -r requirements.txt
+python app/ingest.py
 ```
 
-### 3. Ingest your documents
-
-```bash
-python ingest.py --source ./docs --index ./vectorstore
-```
-
-This will parse documents and build a searchable vector index.
-
-### 4. Start the backend server
+### 2. Start the Backend
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-### 5. (Optional) Start the frontend
+### 3. Start the Frontend
 
 ```bash
 cd frontend
 npm install
+cp .env.example .env  # adjust VITE_API_URL if backend runs elsewhere
 npm run dev
 ```
 
----
+`VITE_API_URL` sets the backend URL used by the chat UI. Change it if the
+backend runs on a different host or port. If the backend requires an API token,
+set `VITE_API_TOKEN` accordingly.
 
-## 🧪 Example API Usage
+Open <http://localhost:3000> and start asking questions.
 
-### Request
+You can also upload additional files through the `/upload` endpoint or the
+upload form in the UI. Filenames are sanitized to prevent path traversal.
+New documents are added to the vector store automatically. Documents can be
+removed with `DELETE /documents/{name}` or via the delete buttons in the UI.
 
-```http
-POST /ask
-Content-Type: application/json
+### Docker (optional)
 
-{
-  "question": "What is the refund policy?",
-  "context": ["knowledge_base"]
-}
+Dockerfiles are provided to simplify deployment. Build and run both services
+with:
+
+```bash
+docker-compose build
+docker-compose up
 ```
 
-### Response
+This will launch the backend on port 8000 and the frontend on port 3000.
+Container logs are stored in the local `logs/` directory.
 
-```json
-{
-  "answer": "Our refund policy allows returns within 30 days of purchase with a valid receipt."
-}
+### Development Tips
+
+* For faster iteration, run `uvicorn app.main:app --reload` so code changes are
+  reloaded automatically.
+* The React app uses Vite. The dev server reloads on file changes when running
+  `npm run dev`.
+* Vector stores can grow large. Clean the `backend/vectorstore` directory if you
+  want to rebuild from scratch.
+* Adjust `ALLOWED_ORIGINS` in `.env` if you host the frontend on another domain.
+* Use `API_TOKENS` in `.env` to protect the API with shared tokens. Tokens are
+  compared using constant-time checks for improved security.
+* Set `LLM_PROVIDER` to `openai`, `grok`, or `claude` to choose the model.
+* Set the matching API key (`OPENAI_API_KEY`, `GROK_API_KEY`, or
+  `ANTHROPIC_API_KEY`).
+* Optionally set `OPENAI_API_BASE`, `ANTHROPIC_API_BASE`, or `GROK_API_BASE`
+  to point at custom endpoints.
+* Set `LOG_LEVEL` in `.env` to control log verbosity.
+* Set `LOG_FILE` to enable file logging and `MAX_UPLOAD_MB` to enforce an upload size limit.
+* Lint your code before submitting PRs to keep the codebase tidy.
+
+### API Endpoints
+
+The backend exposes a few endpoints:
+
+| Method | Path        | Description                    |
+| ------ | ----------- | ------------------------------ |
+| `GET`  | `/health`   | Returns `{"status": "ok"}`      |
+| `GET`  | `/documents`| List document sources in the vector store |
+| `POST` | `/ask`      | Ask a question using JSON `{ "question": "..." }` |
+| `POST` | `/upload`   | Upload one or more documents |
+| `DELETE` | `/documents/{name}` | Remove a document and rebuild the store |
+
+When `API_TOKENS` is configured, include an `X-API-Token` header with one
+of the allowed tokens when calling protected endpoints.
+Each response also includes an `X-Request-ID` header that can be used for
+tracing requests in logs.
+The React chat UI displays this ID with each answer for easier debugging.
+
+### Embedding the Chat Widget
+
+You can include the frontend on any website as a small widget. Build the library
+bundle with:
+
+```bash
+cd frontend
+npm run build:widget
 ```
 
----
+This creates `dist/chaxai-widget.umd.cjs` (and related files). Include the
+script on your page and call `initChaxAI`:
 
-## 📌 Roadmap
-
-* [x] Document ingestion via PDF/Markdown
-* [x] GPT-4 integration via LangChain
-* [x] FAISS vector store support
-* [ ] Web-based UI for file upload
-* [ ] Rule-based automations ("If user mentions X, do Y")
-* [ ] User authentication
-* [ ] Docker + Helm charts for deployment
-* [ ] Switchable LLM support (LLaMA, Mistral, etc.)
-
----
-
-## 🤝 Contributing
-
-We welcome contributions from the community!
-
-To get started:
-
-1. Fork this repository
-2. Create a new branch: `git checkout -b feature/your-feature-name`
-3. Make your changes
-4. Commit and push: `git commit -am 'Add new feature' && git push origin feature/your-feature-name`
-5. Open a Pull Request
-
-For more details, see [`CONTRIBUTING.md`](CONTRIBUTING.md).
-
----
-
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE).
-
-© 2025 [Nickalus Brewer](https://github.com/Nickalus12) — You are free to use, modify, and distribute with attribution.
-
----
-
-## 🙏 Credits
-
-Built with:
-
-* [LangChain](https://github.com/langchain-ai/langchain)
-* [FAISS](https://github.com/facebookresearch/faiss)
-* [OpenAI API](https://platform.openai.com/)
-* [FastAPI](https://github.com/tiangolo/fastapi)
-* Inspired by the design of Rasa, Chatbot UI, and other great open-source assistants.
-
----
-
-## 🌐 Stay Updated
-
-Star the project and follow [@Nickalus12](https://github.com/Nickalus12) for updates and new AI-powered tools.
-
+```html
+<div id="chaxai"></div>
+<script src="/path/to/chaxai-widget.umd.cjs"></script>
+<script>
+  window.initChaxAI({ elementId: 'chaxai', apiUrl: 'http://localhost:8000' });
+</script>
 ```
 
-Let me know if you want a `CONTRIBUTING.md`, `LICENSE`, or `requirements.txt` scaffold next.
-```
+For advanced integration tips, see [INTEGRATION.md](INTEGRATION.md).
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
